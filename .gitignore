@@ -1,0 +1,57 @@
+# Node / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript build output
+dist/
+build/
+tmp/
+temp/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Coverage / testing
+coverage/
+.nyc_output/
+jest-results.json
+
+# TypeScript
+*.tsbuildinfo
+
+# Docker/local tooling
+.docker/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build artifacts from bundlers (if used)
+.cache/
+.parcel-cache/
+.eslintcache

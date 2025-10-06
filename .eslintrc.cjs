@@ -8,6 +8,7 @@
   parserOptions: {
     project: "./tsconfig.json",
     tsconfigRootDir: __dirname,
+    warnOnUnsupportedTypeScriptVersion: false,
   },
   plugins: ["@typescript-eslint"],
   extends: [

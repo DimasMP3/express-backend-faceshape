@@ -60,3 +60,4 @@ jest-results.json
 .cache/
 .parcel-cache/
 .eslintcache
+src/classifcationmodel/index.ts

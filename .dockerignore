@@ -1,0 +1,10 @@
+node_modules
+dist
+drizzle
+.git
+.gitignore
+.env
+**/*.log
+**/.DS_Store
+**/Thumbs.db
+

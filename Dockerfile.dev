@@ -1,0 +1,25 @@
+# Development Dockerfile with hot reload
+FROM oven/bun:1-debian
+
+WORKDIR /app
+
+# Native deps for sharp and TLS certs
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates libvips \
+  && rm -rf /var/lib/apt/lists/*
+
+ENV NODE_ENV=development \
+    PORT=5000
+
+# Install deps (cache-friendly)
+COPY package.json bun.lock* bun.lockb* ./
+RUN bun install --frozen-lockfile || bun install
+
+# Copy source
+COPY . .
+
+EXPOSE 5000
+
+# Hot reload watcher
+CMD ["bun","run","dev"]
+

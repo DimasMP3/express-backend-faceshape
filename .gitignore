@@ -5,6 +5,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Prefer a single lockfile in this repo (npm)
+# Ignore Bun lockfiles to avoid dual-lock confusion
+bun.lock
+bun.lockb
+
 # TypeScript build output
 dist/
 build/

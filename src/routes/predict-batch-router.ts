@@ -30,22 +30,39 @@ predictBatchRouter.post("/", upload.any(), async (req, res) => {
     let bestConfidence = 0;
     let bestIndex = -1;
     // Optional tie-breaker using client metrics if provided
-    let tieBreaker: Record<string, number> | null = null;
+    type OrientationKey = "front" | "left" | "right";
+    let tieBreaker: Record<OrientationKey, number> | null = null;
     try {
-      const rawMetrics = (req.body as any)?.metrics ?? null;
-      const parsed = typeof rawMetrics === "string" ? JSON.parse(rawMetrics) : rawMetrics;
+      const bodyUnknown: unknown = req.body;
+      let rawMetrics: unknown = null;
+      if (bodyUnknown && typeof bodyUnknown === "object" && "metrics" in bodyUnknown) {
+        rawMetrics = (bodyUnknown as { metrics?: unknown }).metrics ?? null;
+      }
+      const parsed: unknown = typeof rawMetrics === "string" ? JSON.parse(rawMetrics) : rawMetrics;
+
+      const getScore = (v: unknown): number => {
+        if (typeof v === "number") return v;
+        const n = Number((v as unknown) ?? 0);
+        return Number.isFinite(n) ? n : 0;
+      };
+
       if (parsed && typeof parsed === "object") {
+        const p = parsed as {
+          front?: { overallScore?: unknown };
+          left?: { overallScore?: unknown };
+          right?: { overallScore?: unknown };
+        };
         tieBreaker = {
-          front: Number(parsed.front?.overallScore ?? 0),
-          left: Number(parsed.left?.overallScore ?? 0),
-          right: Number(parsed.right?.overallScore ?? 0),
-        } as Record<string, number>;
+          front: getScore(p.front?.overallScore),
+          left: getScore(p.left?.overallScore),
+          right: getScore(p.right?.overallScore),
+        };
       }
     } catch {
       // ignore metrics parse errors
     }
 
-    const names = ["front", "left", "right"] as const;
+    const names: readonly OrientationKey[] = ["front", "left", "right"] as const;
     for (let idx = 0; idx < results.length; idx += 1) {
       const r = results[idx];
       const first = Array.isArray(r) && r.length ? r[0] : undefined;
@@ -57,10 +74,10 @@ predictBatchRouter.post("/", upload.any(), async (req, res) => {
         bestIndex = idx;
       } else if (first.label && tieBreaker && conf === bestConfidence && bestShape) {
         // Tie: prefer higher client overallScore if available
-        const ori = names[idx] as unknown as keyof typeof tieBreaker;
-        const currentScore = typeof tieBreaker[ori] === "number" ? tieBreaker[ori] : 0;
-        const currentBestOri = bestIndex >= 0 ? (names[bestIndex] as unknown as keyof typeof tieBreaker) : ori;
-        const bestScore = typeof tieBreaker[currentBestOri] === "number" ? tieBreaker[currentBestOri] : 0;
+        const ori: OrientationKey = names[idx];
+        const currentScore = tieBreaker[ori] ?? 0;
+        const currentBestOri: OrientationKey = bestIndex >= 0 ? names[bestIndex] : ori;
+        const bestScore = tieBreaker[currentBestOri] ?? 0;
         if (currentScore > bestScore) {
           bestConfidence = conf;
           bestShape = String(first.label);

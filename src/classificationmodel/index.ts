@@ -1,10 +1,13 @@
 import { Client } from "@gradio/client";
 import type { Client as GradioClient } from "@gradio/client";
 import type sharp from "sharp";
+import { ENV } from "@/util/env";
 
 const FACE_SHAPE_SPACE_ID = "DimasMP3/hf-classification-faceshape";
 const DEFAULT_ENDPOINT = "/predict";
 const INPUT_NAME = "image_pil";
+const BATCH_ENDPOINT = "/predict_batch";
+const BATCH_INPUT_NAME = "files_in";
 type SharpFactory = typeof sharp;
 
 let sharpFactoryPromise: Promise<SharpFactory | null> | null = null;
@@ -51,14 +54,19 @@ async function ensureJpegBuffer(imageBuffer: Buffer): Promise<Buffer> {
   }
 
   try {
-    return await sharpFactory(imageBuffer).jpeg().toBuffer();
+    return await sharpFactory(imageBuffer).jpeg({ quality: 90 }).toBuffer();
   } catch {
     return imageBuffer;
   }
 }
 
 export function connectFaceShapeClient(): Promise<GradioClient> {
-  return Client.connect(FACE_SHAPE_SPACE_ID);
+  const target = ENV.GRADIO_URL?.trim() || ENV.GRADIO_SPACE_ID?.trim() || FACE_SHAPE_SPACE_ID;
+  const opts: { hf_token?: string } = {};
+  if (ENV.HF_TOKEN) {
+    opts.hf_token = ENV.HF_TOKEN;
+  }
+  return Client.connect(target, opts as unknown as object);
 }
 
 export async function predictClassification(imageBuffer: Buffer): Promise<PredictionResult[]> {
@@ -99,6 +107,40 @@ export async function predictClassification(imageBuffer: Buffer): Promise<Predic
       probabilities,
     };
   });
+}
+
+function payloadToPrediction(payload: FaceShapePrediction | undefined): PredictionResult | undefined {
+  if (!payload) return undefined;
+  const confidences = payload.confidences ?? [];
+  const probabilities: Record<string, number> = Object.fromEntries(labels.map((l) => [l, 0]));
+  for (const item of confidences) {
+    const key = item.label == null ? "" : String(item.label);
+    const confidence = typeof item.confidence === "number" ? item.confidence : 0;
+    if (key) probabilities[key] = confidence;
+  }
+  const topConfidence = confidences[0]?.confidence ?? null;
+  const label = payload.label == null ? "" : String(payload.label);
+  return {
+    label,
+    percentage: typeof topConfidence === "number" ? topConfidence * 100 : 0,
+    probabilities,
+  };
+}
+
+export async function predictBatchBest(imageBuffers: Buffer[]): Promise<PredictionResult | undefined> {
+  const client = await connectFaceShapeClient();
+  // normalize to jpeg if needed
+  const files: Buffer[] = [];
+  for (const buf of imageBuffers) {
+    files.push(await ensureJpegBuffer(buf));
+  }
+  const result = await client.predict(BATCH_ENDPOINT, { [BATCH_INPUT_NAME]: files });
+  const payload = (result.data as FaceShapePrediction | FaceShapePrediction[] | undefined);
+  // batch returns a single payload (best)
+  if (Array.isArray(payload)) {
+    return payloadToPrediction(payload[0]);
+  }
+  return payloadToPrediction(payload as FaceShapePrediction | undefined);
 }
 
 export default async function main(imageBuffer: Buffer): Promise<PredictionResult | undefined> {

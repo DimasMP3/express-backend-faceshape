@@ -7,7 +7,8 @@ const FACE_SHAPE_SPACE_ID = "DimasMP3/hf-classification-faceshape";
 const DEFAULT_ENDPOINT = "/predict";
 const INPUT_NAME = "image_pil";
 const BATCH_ENDPOINT = "/predict_batch";
-const BATCH_INPUT_NAME = "files_in";
+// Gradio Files component exposes parameter name 'files' for api_name endpoints
+const BATCH_INPUT_NAME = "files";
 type SharpFactory = typeof sharp;
 
 let sharpFactoryPromise: Promise<SharpFactory | null> | null = null;

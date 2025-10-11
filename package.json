@@ -9,16 +9,17 @@
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
     "seed:all": "bun scripts/seed-all.ts",
     "db:gen": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "seed:foto-all": "bun scripts/seed-foto-all-db.ts"
   },
   "dependencies": {
     "@gradio/client": "^1.19.1",
-    "helmet": "^8.0.0",
-    "express-rate-limit": "^7.4.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.36.0",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^8.0.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "postgres": "^3.4.4",

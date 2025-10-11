@@ -61,3 +61,4 @@ jest-results.json
 .parcel-cache/
 .eslintcache
 src/classifcationmodel/index.ts
+scripts/seed-all.ts

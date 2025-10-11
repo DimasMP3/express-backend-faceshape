@@ -3,8 +3,16 @@ import { ENV } from "@/util/env";
 import { faceShapeEnum } from "@/db/schema";
 type FaceShape = (typeof faceShapeEnum.enumValues)[number];
 
-export function composeR2Url(shape: FaceShape, filename: string) {
-  return `${ENV.R2_URL}/${shape}/${encodeURIComponent(filename)}`;
+function encodePathSegments(p: string) {
+  return p
+    .split("/")
+    .filter(Boolean)
+    .map((seg) => encodeURIComponent(seg))
+    .join("/");
+}
+
+export function composeR2Url(shape: FaceShape, filenameOrPath: string) {
+  return `${ENV.R2_URL}/${shape}/${encodePathSegments(filenameOrPath)}`;
 }
 
 export async function getImages(shape: FaceShape) {
@@ -15,7 +23,7 @@ export async function saveBulkImages(shape: FaceShape, files: string[], mime = "
   const rows = files.map((fname, i) => ({
     faceShape: shape,
     url: composeR2Url(shape, fname),
-    title: fname.replace(/\.[a-z0-9]+$/i, "").trim(),
+    title: (fname.split("/").pop() ?? fname).replace(/\.[a-z0-9]+$/i, "").trim(),
     mime,
     sortOrder: i,
   }));

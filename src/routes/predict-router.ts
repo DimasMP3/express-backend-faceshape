@@ -10,8 +10,6 @@ const upload = multer({
     if (ok) {
       cb(null, true);
     } else {
-      // Some @types/multer variants type the first arg as null only.
-      // Use (null, false) to reject file without throwing a typed error.
       cb(null, false);
     }
   },

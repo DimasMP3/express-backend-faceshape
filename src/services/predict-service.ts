@@ -80,7 +80,6 @@ export async function buffersFromBatchRequest(body: unknown, files?: Array<Expre
     }
   }
 
-  // JSON: { imagesBase64: [..] }
   const imagesBase64 = (body as { imagesBase64?: unknown })?.imagesBase64;
   if (Array.isArray(imagesBase64)) {
     for (const s of imagesBase64) {

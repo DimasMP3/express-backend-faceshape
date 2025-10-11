@@ -21,7 +21,6 @@ export const ENV = {
         .filter((n) => Number.isFinite(n) && n >= 0);
       if (arr.length) return arr;
     }
-    // 0 (immediate) -> 500ms -> 1500ms -> 3000ms
     return [0, 500, 1500, 3000];
   })(),
   PREDICT_RATE_LIMIT_WINDOW_MS: Number(process.env.PREDICT_RATE_LIMIT_WINDOW_MS ?? 60_000),

@@ -3,11 +3,10 @@ import type { Client as GradioClient } from "@gradio/client";
 import type sharp from "sharp";
 import { ENV } from "@/util/env";
 
-const FACE_SHAPE_SPACE_ID = "DimasMP3/hf-classification-faceshape";
+const FACE_SHAPE_SPACE_ID = process.env.GRADIO_SPACE_ID;
 const DEFAULT_ENDPOINT = "/predict";
 const INPUT_NAME = "image_pil";
 const BATCH_ENDPOINT = "/predict_batch";
-// Gradio Files component exposes parameter name 'files' for api_name endpoints
 const BATCH_INPUT_NAME = "files";
 type SharpFactory = typeof sharp;
 
@@ -62,12 +61,12 @@ async function ensureJpegBuffer(imageBuffer: Buffer): Promise<Buffer> {
 }
 
 export function connectFaceShapeClient(): Promise<GradioClient> {
-  const target = ENV.GRADIO_URL?.trim() || ENV.GRADIO_SPACE_ID?.trim() || FACE_SHAPE_SPACE_ID;
+  const target = (ENV.GRADIO_URL?.trim() || ENV.GRADIO_SPACE_ID?.trim() || FACE_SHAPE_SPACE_ID || "");
   const opts: { hf_token?: string } = {};
   if (ENV.HF_TOKEN) {
     opts.hf_token = ENV.HF_TOKEN;
   }
-  return Client.connect(target, opts as unknown as object);
+  return Client.connect(target, opts as Record<string, unknown>);
 }
 
 export async function predictClassification(imageBuffer: Buffer): Promise<PredictionResult[]> {
@@ -84,13 +83,12 @@ export async function predictClassification(imageBuffer: Buffer): Promise<Predic
 
   return predictions.map((prediction) => {
     const confidences = prediction.confidences ?? [];
-    const probabilities: Record<string, number> = Object.fromEntries(
-      labels.map((label) => [label, 0])
-    );
+    const clamp01 = (n: number) => (Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0);
+    const probabilities: Record<string, number> = Object.fromEntries(labels.map((label) => [label, 0]));
 
     for (const item of confidences) {
       const key = item.label == null ? "" : String(item.label);
-      const confidence = typeof item.confidence === "number" ? item.confidence : 0;
+      const confidence = clamp01(typeof item.confidence === "number" ? item.confidence : 0);
 
       if (key in probabilities) {
         probabilities[key] = confidence;
@@ -99,12 +97,15 @@ export async function predictClassification(imageBuffer: Buffer): Promise<Predic
       }
     }
 
-    const topConfidence = confidences[0]?.confidence ?? null;
+    const topConfidence = confidences.reduce<number>((max, c) => {
+      const v = typeof c.confidence === "number" ? c.confidence : 0;
+      return v > max ? v : max;
+    }, 0);
     const label = prediction.label == null ? "" : String(prediction.label);
 
     return {
       label,
-      percentage: typeof topConfidence === "number" ? topConfidence * 100 : 0,
+      percentage: clamp01(topConfidence) * 100,
       probabilities,
     };
   });
@@ -113,17 +114,21 @@ export async function predictClassification(imageBuffer: Buffer): Promise<Predic
 function payloadToPrediction(payload: FaceShapePrediction | undefined): PredictionResult | undefined {
   if (!payload) return undefined;
   const confidences = payload.confidences ?? [];
+  const clamp01 = (n: number) => (Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0);
   const probabilities: Record<string, number> = Object.fromEntries(labels.map((l) => [l, 0]));
   for (const item of confidences) {
     const key = item.label == null ? "" : String(item.label);
-    const confidence = typeof item.confidence === "number" ? item.confidence : 0;
+    const confidence = clamp01(typeof item.confidence === "number" ? item.confidence : 0);
     if (key) probabilities[key] = confidence;
   }
-  const topConfidence = confidences[0]?.confidence ?? null;
+  const topConfidence = confidences.reduce<number>((max, c) => {
+    const v = typeof c.confidence === "number" ? c.confidence : 0;
+    return v > max ? v : max;
+  }, 0);
   const label = payload.label == null ? "" : String(payload.label);
   return {
     label,
-    percentage: typeof topConfidence === "number" ? topConfidence * 100 : 0,
+    percentage: clamp01(topConfidence) * 100,
     probabilities,
   };
 }

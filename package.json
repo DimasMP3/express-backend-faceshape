@@ -10,8 +10,7 @@
     "db:gen": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "seed:foto-all": "bun scripts/seed-foto-all-db.ts",
-    "seed:videos-round": "bun scripts/seed-videos-round-db.ts",
-    "seed:videos-oval": "bun scripts/seed-videos-oval-db.ts"
+    "seed:videos-all": "bun scripts/seed-videos-all-db.ts"
   },
   "dependencies": {
     "@gradio/client": "^1.19.1",

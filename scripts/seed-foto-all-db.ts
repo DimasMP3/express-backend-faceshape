@@ -32,7 +32,7 @@ async function seedShape(shape: FaceShape, files: string[]) {
 }
 
 async function main() {
-  // Dataset baru "foto" per shape sesuai file yang Anda kirim
+  // nama file image mu kudu bener
   const data: Record<FaceShape, string[]> = {
     heart: [
       "foto/TexturedQuiffHairstyle.png",

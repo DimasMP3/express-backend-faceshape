@@ -4,6 +4,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { imagesRouter } from "@/routes/images-router";
+import { videosRouter } from "@/routes/videos-router";
 import { predictRouter } from "@/routes/predict-router";
 import { predictBatchRouter } from "@/routes/predict-batch-router";
 import { ENV } from "@/util/env";
@@ -29,6 +30,7 @@ export function createApp() {
   });
 
   app.use("/api/images", imagesRouter);
+  app.use("/api/videos", videosRouter);
   app.use("/predict", predictLimiter, predictRouter);
   app.use("/predict/batch", predictLimiter, predictBatchRouter);
 

@@ -50,10 +50,33 @@ async function seedShape(shape: FaceShape, files: string[]) {
 }
 
 async function main() {
-  // Kumpulan video berdasarkan screenshot & script sebelumnya
+    
   const data: Record<FaceShape, string[]> = {
-    heart: [],
-    oblong: [],
+    heart: [
+      "CombOverWithLowFadeVideo.mp4",
+      "CutQuiffWithFullerSidesVideo.mp4",
+      "TexturedQuiffVideo.mp4",
+      "TexturedFringeVideo.mp4",
+      "TaperedSideburnsWithLengthVideo.mp4",
+      "ShortAfroWithShapeUpVideo.mp4",
+      "ModernShagVideo.mp4",
+      "LongerWavyVideo.mp4",
+      "TaperedSideburnsWithLengthVideo.mp4",
+      "DeepSidePartVideo.mp4",
+
+    ],
+    oblong: [
+      "BuzzCutVideo.mp4",
+      "ClassicSidePartVideo.mp4",
+      "CurtainsVideo.mp4",
+      "ForwardStyledFrenchCropVideo.mp4",
+      "MediumLengthVideo.mp4",
+      "MessyFringeVideo.mp4",
+      "ShortAfroWithBoxFadeVideo.mp4",
+      "SideSweptFringeVideo.mp4",
+      "TaperedSidesWithTexturedTopVideo.mp4",
+      "WavyShagVideo.mp4",
+    ],
     oval: [
       "SidePartVideo.mp4",
       "SlickBackVideo.mp4",
@@ -67,16 +90,16 @@ async function main() {
       "CommaHairVideo.mp4",
     ],
     round: [
-      "VerticalSpikyVideo.mkv",
-      "SpikyVideo.mkv",
-      "UndercutVideo.mkv",
-      "QuiffWithUndercutVideo.mkv",
-      "PompadourVideo.mkv",
-      "HardPartCombOverVideo.mkv",
-      "FauxHawkVideo.mkv",
-      "BrushedBackHairWithTaperedSidesVideo.mkv",
-      "BoxFadeVideo.mkv",
-      "AngularFringeVideo.mkv",
+      "VerticalSpikyVideo.mp4",
+      "SpikyVideo.mp4",
+      "UndercutVideo.mp4",
+      "QuiffWithUndercutVideo.mp4",
+      "PompadourVideo.mp4",
+      "HardPartCombOverVideo.mp4",
+      "FauxHawkVideo.mp4",
+      "BrushedBackHairWithTaperedSidesVideo.mp4",
+      "BoxFadeVideo.mp4",
+      "AngularFringeVideo.mp4",
     ],
     square: [
       "BuzzCutVideo.mp4",
@@ -102,4 +125,3 @@ main().catch((e) => {
   console.error(e);
   process.exitCode = 1;
 });
-

@@ -39,14 +39,23 @@ async function seedShape(shape: FaceShape, files: string[]) {
     sortOrder: i,
   }));
 
-  const urls = rows.map((r) => r.url);
-  if (urls.length) {
-    await db.delete(videos).where(inArray(videos.url, urls));
+   // Deduplicate by URL to avoid unique constraint violations
+  const uniqMap = new Map<string, (typeof rows)[number]>();
+  for (const row of rows) {
+    if (!uniqMap.has(row.url)) uniqMap.set(row.url, row);
   }
-  if (rows.length) {
-    await db.insert(videos).values(rows);
+  const uniqRows = Array.from(uniqMap.values());
+
+  const urls = uniqRows.map((r) => r.url);
+  
+    if (urls.length) {
+      await db.delete(videos).where(inArray(videos.url, urls));
   }
-  console.log(`- ${shape}: seeded ${rows.length}`);
+    if (uniqRows.length) {
+      await db.insert(videos).values(uniqRows);
+  }
+
+  console.log(`- ${shape}: seeded ${uniqRows.length}`);
 }
 
 async function main() {
@@ -57,13 +66,12 @@ async function main() {
       "CutQuiffWithFullerSidesVideo.mp4",
       "TexturedQuiffVideo.mp4",
       "TexturedFringeVideo.mp4",
-      "TaperedSideburnsWithLengthVideo.mp4",
       "ShortAfroWithShapeUpVideo.mp4",
       "ModernShagVideo.mp4",
       "LongerWavyVideo.mp4",
       "TaperedSideburnsWithLengthVideo.mp4",
       "DeepSidePartVideo.mp4",
-
+      "LayeredMediumVideo.mp4",
     ],
     oblong: [
       "BuzzCutVideo.mp4",
@@ -72,7 +80,7 @@ async function main() {
       "ForwardStyledFrenchCropVideo.mp4",
       "MediumLengthVideo.mp4",
       "MessyFringeVideo.mp4",
-      "ShortAfroWithBoxFadeVideo.mp4",
+      "ShortAfroWithLowFadeVideo.mp4",
       "SideSweptFringeVideo.mp4",
       "TaperedSidesWithTexturedTopVideo.mp4",
       "WavyShagVideo.mp4",
@@ -111,6 +119,7 @@ async function main() {
       "ManBunVideo.mp4",
       "MessyWavesVideo.mp4",
       "ShortAfroWithBoxFadeVideo.mp4",
+      "SlickBackWithTaperFadeVideo.mp4",
     ],
   };
 
